@@ -21,9 +21,26 @@ func SetupRoutes(app *fiber.App) {
 	// API Group
 	api := app.Group("/api")
 
+	// User Routes
+	users := api.Group("/users")
+	users.Get("/", handlers.GetUsers)
+	users.Get("/:id", handlers.GetUser)
+	users.Post("/", handlers.CreateUser)
+	users.Put("/:id", handlers.UpdateUser)
+	users.Delete("/:id", handlers.DeleteUser)
+
 	// Game Routes
 	games := api.Group("/games")
 	games.Get("/", handlers.GetGames)
+	games.Get("/:id", handlers.GetGame)
 	games.Post("/", handlers.CreateGame)
-	// Add other CRUD routes here...
+	games.Put("/:id", handlers.UpdateGame)
+	games.Delete("/:id", handlers.DeleteGame)
+
+	// Tag Routes
+	tags := api.Group("/tags")
+	tags.Get("/", handlers.GetTags)
+	tags.Post("/", handlers.CreateTag)
+	tags.Put("/:id", handlers.UpdateTag)
+	tags.Delete("/:id", handlers.DeleteTag)
 }
