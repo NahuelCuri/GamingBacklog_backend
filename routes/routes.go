@@ -2,6 +2,7 @@ package routes
 
 import (
 	"backlog-backend/handlers"
+	"backlog-backend/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -27,21 +28,24 @@ func SetupRoutes(app *fiber.App) {
 	users.Get("/:id", handlers.GetUser)
 	users.Post("/", handlers.CreateUser)
 	users.Post("/login", handlers.Login)
-	users.Put("/:id", handlers.UpdateUser)
-	users.Delete("/:id", handlers.DeleteUser)
+	// Protected User Routes
+	users.Put("/:id", middleware.Protected(), handlers.UpdateUser)
+	users.Delete("/:id", middleware.Protected(), handlers.DeleteUser)
 
 	// Game Routes
 	games := api.Group("/games")
 	games.Get("/", handlers.GetGames)
 	games.Get("/:id", handlers.GetGame)
-	games.Post("/", handlers.CreateGame)
-	games.Put("/:id", handlers.UpdateGame)
-	games.Delete("/:id", handlers.DeleteGame)
+	// Protected Game Routes
+	games.Post("/", middleware.Protected(), handlers.CreateGame)
+	games.Put("/:id", middleware.Protected(), handlers.UpdateGame)
+	games.Delete("/:id", middleware.Protected(), handlers.DeleteGame)
 
 	// Tag Routes
 	tags := api.Group("/tags")
 	tags.Get("/", handlers.GetTags)
-	tags.Post("/", handlers.CreateTag)
-	tags.Put("/:id", handlers.UpdateTag)
-	tags.Delete("/:id", handlers.DeleteTag)
+	// Protected Tag Routes
+	tags.Post("/", middleware.Protected(), handlers.CreateTag)
+	tags.Put("/:id", middleware.Protected(), handlers.UpdateTag)
+	tags.Delete("/:id", middleware.Protected(), handlers.DeleteTag)
 }

@@ -4,8 +4,11 @@ import (
 	"backlog-backend/database"
 	"backlog-backend/dto"
 	"backlog-backend/models"
+	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -22,9 +25,13 @@ func CreateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid input", "error": err.Error()})
 	}
 
+	// User already exists, return it (Success 200) - Consider if we want to log them in here too?
+	// For now, let's just return success but maybe no token to force login, or generate one.
+	// Since the original code just returned the user, we will stick to that but add token logic if we want auto-login.
+	// Actually, let's keep it simple: if account exists, they should use /login. The frontend handles this retry logic.
+	// But to stay consistent with the "return it" comment:
 	var existingUser models.User
 	if err := database.DB.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
-		// User already exists, return it (Success 200)
 		res := dto.UserResponse{
 			ID:        existingUser.ID,
 			Username:  existingUser.Username,
@@ -49,10 +56,17 @@ func CreateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Could not create user", "error": err.Error()})
 	}
 
+	// Generate Token
+	token, err := generateToken(user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Could not login after signup"})
+	}
+
 	res := dto.UserResponse{
 		ID:        user.ID,
 		Username:  user.Username,
 		Email:     user.Email,
+		Token:     token,
 		CreatedAt: user.CreatedAt,
 	}
 
@@ -74,14 +88,35 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Invalid credentials"})
 	}
 
+	token, err := generateToken(user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Could not generate token"})
+	}
+
 	res := dto.UserResponse{
 		ID:        user.ID,
 		Username:  user.Username,
 		Email:     user.Email,
+		Token:     token,
 		CreatedAt: user.CreatedAt,
 	}
 
 	return c.JSON(fiber.Map{"status": "success", "data": res})
+}
+
+func generateToken(user models.User) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id":  user.ID,
+		"email":    user.Email,
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Hour * 72).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		secret = "secret"
+	}
+	return token.SignedString([]byte(secret))
 }
 
 func GetUsers(c *fiber.Ctx) error {
