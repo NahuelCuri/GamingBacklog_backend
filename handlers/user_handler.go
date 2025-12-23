@@ -22,6 +22,18 @@ func CreateUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid input", "error": err.Error()})
 	}
 
+	var existingUser models.User
+	if err := database.DB.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+		// User already exists, return it (Success 200)
+		res := dto.UserResponse{
+			ID:        existingUser.ID,
+			Username:  existingUser.Username,
+			Email:     existingUser.Email,
+			CreatedAt: existingUser.CreatedAt,
+		}
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "data": res})
+	}
+
 	hash, err := hashPassword(req.Password)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Could not hash password"})
@@ -47,11 +59,37 @@ func CreateUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "data": res})
 }
 
+func Login(c *fiber.Ctx) error {
+	var req dto.LoginRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid input"})
+	}
+
+	var user models.User
+	if err := database.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Invalid credentials"})
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"status": "error", "message": "Invalid credentials"})
+	}
+
+	res := dto.UserResponse{
+		ID:        user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+	}
+
+	return c.JSON(fiber.Map{"status": "success", "data": res})
+}
+
 func GetUsers(c *fiber.Ctx) error {
 	var users []models.User
 	database.DB.Find(&users)
 
-	var res []dto.UserResponse
+	// Initialize empty slice to ensure [] is returned instead of null
+	res := make([]dto.UserResponse, 0)
 	for _, user := range users {
 		res = append(res, dto.UserResponse{
 			ID:        user.ID,

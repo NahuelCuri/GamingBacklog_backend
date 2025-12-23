@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 )
 
@@ -26,6 +27,7 @@ func main() {
 
 	// CORS Middleware
 	app.Use(cors.New())
+	app.Use(logger.New())
 
 	// Setup Routes
 	routes.SetupRoutes(app)
