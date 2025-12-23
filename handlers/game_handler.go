@@ -44,7 +44,7 @@ func GetGames(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Could not fetch games", "error": result.Error.Error()})
 	}
 
-	var res []dto.GameResponse
+	res := make([]dto.GameResponse, 0)
 	for _, game := range games {
 		res = append(res, mapGameToResponse(game))
 	}
