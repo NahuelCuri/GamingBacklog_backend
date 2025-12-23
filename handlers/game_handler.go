@@ -4,6 +4,7 @@ import (
 	"backlog-backend/database"
 	"backlog-backend/dto"
 	"backlog-backend/models"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -114,6 +115,14 @@ func UpdateGame(c *fiber.Ctx) error {
 		game.Title = req.Title
 	}
 	// ... map other fields ...
+	// Check for image update/cleanup
+	if req.CoverURL != game.CoverURL {
+		// If old cover was a local image, delete it
+		if game.CoverURL != "" && len(game.CoverURL) > 8 && game.CoverURL[:8] == "/images/" {
+			oldImagePath := "." + game.CoverURL
+			os.Remove(oldImagePath) // Ignore error
+		}
+	}
 	game.CoverURL = req.CoverURL
 	game.Genre = req.Genre
 	if req.Status != "" {
@@ -146,6 +155,17 @@ func DeleteGame(c *fiber.Ctx) error {
 	var game models.Game
 	if err := database.DB.First(&game, "id = ?", id).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "Game not found"})
+	}
+
+	// Delete image if exists
+	if game.CoverURL != "" && len(game.CoverURL) > 8 && game.CoverURL[:8] == "/images/" {
+		// Assuming CoverURL is saved as "/images/filename"
+		// Remove leading "/" to get relative path "./images/filename" (or just "images/filename")
+		imagePath := "." + game.CoverURL
+		if err := os.Remove(imagePath); err != nil {
+			// Log error but proceed with deleting game
+			// fmt.Printf("Failed to delete image %s: %v\n", imagePath, err)
+		}
 	}
 
 	database.DB.Delete(&game)

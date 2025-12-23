@@ -26,8 +26,19 @@ func main() {
 	app := fiber.New()
 
 	// CORS Middleware
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
 	app.Use(logger.New())
+
+	// Ensure images directory exists
+	if _, err := os.Stat("./images"); os.IsNotExist(err) {
+		if err := os.Mkdir("./images", 0755); err != nil {
+			log.Printf("Warning: Could not create images directory: %v", err)
+		}
+	}
+	app.Static("/images", "./images")
 
 	// Setup Routes
 	routes.SetupRoutes(app)

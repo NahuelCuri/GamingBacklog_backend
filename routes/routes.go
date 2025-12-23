@@ -48,4 +48,10 @@ func SetupRoutes(app *fiber.App) {
 	tags.Post("/", middleware.Protected(), handlers.CreateTag)
 	tags.Put("/:id", middleware.Protected(), handlers.UpdateTag)
 	tags.Delete("/:id", middleware.Protected(), handlers.DeleteTag)
+
+	// Image Routes
+	// Post /api/upload
+	api.Post("/upload", middleware.Protected(), handlers.UploadImage)
+	// Delete /api/images/:filename
+	api.Delete("/images/:filename", middleware.Protected(), handlers.DeleteImage)
 }
