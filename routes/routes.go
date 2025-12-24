@@ -34,12 +34,13 @@ func SetupRoutes(app *fiber.App) {
 
 	// Game Routes
 	games := api.Group("/games")
+	// Protected Game Routes
+	games.Use(middleware.Protected())
 	games.Get("/", handlers.GetGames)
 	games.Get("/:id", handlers.GetGame)
-	// Protected Game Routes
-	games.Post("/", middleware.Protected(), handlers.CreateGame)
-	games.Put("/:id", middleware.Protected(), handlers.UpdateGame)
-	games.Delete("/:id", middleware.Protected(), handlers.DeleteGame)
+	games.Post("/", handlers.CreateGame)
+	games.Put("/:id", handlers.UpdateGame)
+	games.Delete("/:id", handlers.DeleteGame)
 
 	// Tag Routes
 	tags := api.Group("/tags")

@@ -4,9 +4,11 @@ import (
 	"backlog-backend/database"
 	"backlog-backend/dto"
 	"backlog-backend/models"
+	"fmt"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 // Helper to map model to DTO
@@ -39,8 +41,10 @@ func mapGameToResponse(game models.Game) dto.GameResponse {
 }
 
 func GetGames(c *fiber.Ctx) error {
+	userID := c.Locals("user_id")
+	fmt.Printf("DEBUG: GetGames - UserID: %v\n", userID)
 	var games []models.Game
-	result := database.DB.Preload("Tags").Find(&games)
+	result := database.DB.Preload("Tags").Where("user_id = ?", userID).Find(&games)
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Could not fetch games", "error": result.Error.Error()})
 	}
@@ -54,8 +58,9 @@ func GetGames(c *fiber.Ctx) error {
 
 func GetGame(c *fiber.Ctx) error {
 	id := c.Params("id")
+	userID := c.Locals("user_id")
 	var game models.Game
-	if err := database.DB.Preload("Tags").First(&game, "id = ?", id).Error; err != nil {
+	if err := database.DB.Preload("Tags").Where("user_id = ?", userID).First(&game, "id = ?", id).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "Game not found"})
 	}
 	return c.JSON(fiber.Map{"status": "success", "data": mapGameToResponse(game)})
@@ -67,8 +72,16 @@ func CreateGame(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "error", "message": "Invalid input"})
 	}
 
+	userID := c.Locals("user_id")
+	fmt.Printf("DEBUG: CreateGame - UserID: %v\n", userID)
+	// Type assertion to ensure it's a string or UUID as expected by the model.
+	// Assuming the JWT middleware puts the claim as is. If it is string in JWT:
+	// But wait, the model UserID is uuid.UUID.
+	// c.Locals("user_id") comes from claims["user_id"].
+	// We need to parse it to UUID.
+
 	game := models.Game{
-		UserID:       req.UserID, // Should validate or get from context/token
+		UserID:       uuid.MustParse(userID.(string)), // Should handle error safely if possible, but middleware checks validity
 		Title:        req.Title,
 		CoverURL:     req.CoverURL,
 		Genre:        req.Genre,
@@ -100,8 +113,9 @@ func CreateGame(c *fiber.Ctx) error {
 
 func UpdateGame(c *fiber.Ctx) error {
 	id := c.Params("id")
+	userID := c.Locals("user_id")
 	var game models.Game
-	if err := database.DB.Preload("Tags").First(&game, "id = ?", id).Error; err != nil {
+	if err := database.DB.Preload("Tags").Where("user_id = ?", userID).First(&game, "id = ?", id).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "Game not found"})
 	}
 
@@ -152,8 +166,10 @@ func UpdateGame(c *fiber.Ctx) error {
 
 func DeleteGame(c *fiber.Ctx) error {
 	id := c.Params("id")
+	userID := c.Locals("user_id")
+	fmt.Printf("DEBUG: DeleteGame - GameID: %s, UserID: %v\n", id, userID)
 	var game models.Game
-	if err := database.DB.First(&game, "id = ?", id).Error; err != nil {
+	if err := database.DB.Where("user_id = ?", userID).First(&game, "id = ?", id).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "Game not found"})
 	}
 
