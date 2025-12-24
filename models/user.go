@@ -14,6 +14,7 @@ type User struct {
 	PasswordHash string    `gorm:"not null" json:"-"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
+	Role         string    `gorm:"type:varchar(20);default:'user';not null" json:"role"`
 	Games        []Game    `gorm:"foreignKey:UserID" json:"games,omitempty"`
 }
 

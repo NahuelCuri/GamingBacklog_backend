@@ -36,6 +36,7 @@ func CreateUser(c *fiber.Ctx) error {
 			ID:        existingUser.ID,
 			Username:  existingUser.Username,
 			Email:     existingUser.Email,
+			Role:      existingUser.Role,
 			CreatedAt: existingUser.CreatedAt,
 		}
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "data": res})
@@ -49,6 +50,7 @@ func CreateUser(c *fiber.Ctx) error {
 	user := models.User{
 		Username:     req.Username,
 		Email:        req.Email,
+		Role:         "user",
 		PasswordHash: hash,
 	}
 
@@ -66,6 +68,7 @@ func CreateUser(c *fiber.Ctx) error {
 		ID:        user.ID,
 		Username:  user.Username,
 		Email:     user.Email,
+		Role:      user.Role,
 		Token:     token,
 		CreatedAt: user.CreatedAt,
 	}
@@ -97,6 +100,7 @@ func Login(c *fiber.Ctx) error {
 		ID:        user.ID,
 		Username:  user.Username,
 		Email:     user.Email,
+		Role:      user.Role,
 		Token:     token,
 		CreatedAt: user.CreatedAt,
 	}
@@ -109,6 +113,7 @@ func generateToken(user models.User) (string, error) {
 		"user_id":  user.ID,
 		"email":    user.Email,
 		"username": user.Username,
+		"role":     user.Role,
 		"exp":      time.Now().Add(time.Hour * 72).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -130,6 +135,7 @@ func GetUsers(c *fiber.Ctx) error {
 			ID:        user.ID,
 			Username:  user.Username,
 			Email:     user.Email,
+			Role:      user.Role,
 			CreatedAt: user.CreatedAt,
 		})
 	}
@@ -148,6 +154,7 @@ func GetUser(c *fiber.Ctx) error {
 		ID:        user.ID,
 		Username:  user.Username,
 		Email:     user.Email,
+		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 	}
 	return c.JSON(fiber.Map{"status": "success", "data": res})
@@ -178,6 +185,7 @@ func UpdateUser(c *fiber.Ctx) error {
 		ID:        user.ID,
 		Username:  user.Username,
 		Email:     user.Email,
+		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
 	}
 	return c.JSON(fiber.Map{"status": "success", "data": res})
