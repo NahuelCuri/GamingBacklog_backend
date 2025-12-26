@@ -23,7 +23,8 @@ type Game struct {
 	CoverURL     string     `json:"cover_url"`
 	Genre        string     `json:"genre"`
 	Status       GameStatus `gorm:"type:varchar(20);default:'backlog'" json:"status"`
-	Score        *float64   `json:"score"` // Pointer to allow null (0.0 is a valid score)
+	Platform     string     `gorm:"type:varchar(50)" json:"platform"` // Steam, Xbox, Epic, Switch, GOG, Pirated
+	Score        *float64   `json:"score"`                            // Pointer to allow null (0.0 is a valid score)
 	HoursPlayed  int        `json:"hours_played"`
 	HLTBEstimate int        `json:"hltb_estimate"`
 	ReleaseYear  int        `json:"release_year"`

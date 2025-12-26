@@ -12,6 +12,7 @@ type CreateGameRequest struct {
 	CoverURL     string      `json:"cover_url"`
 	Genre        string      `json:"genre"`
 	Status       string      `json:"status"` // "backlog", "playing", etc.
+	Platform     string      `json:"platform"`
 	Score        *float64    `json:"score"`
 	HoursPlayed  int         `json:"hours_played"`
 	HLTBEstimate int         `json:"hltb_estimate"`
@@ -26,6 +27,7 @@ type UpdateGameRequest struct {
 	CoverURL     string      `json:"cover_url"`
 	Genre        string      `json:"genre"`
 	Status       string      `json:"status"`
+	Platform     string      `json:"platform"`
 	Score        *float64    `json:"score"`
 	HoursPlayed  int         `json:"hours_played"`
 	HLTBEstimate int         `json:"hltb_estimate"`
@@ -42,6 +44,7 @@ type GameResponse struct {
 	CoverURL     string        `json:"cover_url"`
 	Genre        string        `json:"genre"`
 	Status       string        `json:"status"`
+	Platform     string        `json:"platform"`
 	Score        *float64      `json:"score"`
 	HoursPlayed  int           `json:"hours_played"`
 	HLTBEstimate int           `json:"hltb_estimate"`
