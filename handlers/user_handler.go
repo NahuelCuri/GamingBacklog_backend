@@ -178,6 +178,16 @@ func UpdateUser(c *fiber.Ctx) error {
 	if req.Email != "" {
 		user.Email = req.Email
 	}
+	if req.Role != "" {
+		user.Role = req.Role
+	}
+	if req.Password != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"status": "error", "message": "Could not hash password"})
+		}
+		user.PasswordHash = string(hash)
+	}
 
 	database.DB.Save(&user)
 
