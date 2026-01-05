@@ -3,6 +3,7 @@ package handlers
 import (
 	"backlog-backend/database"
 	"backlog-backend/models"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -97,26 +98,24 @@ func UpdateTierList(c *fiber.Ctx) error {
 		}
 
 		// 2. Delete existing rows (Cascade should handle items)
-		// We explicitly delete rows belonging to this list
 		if err := tx.Where("tier_list_id = ?", existingTierList.ID).Delete(&models.TierRow{}).Error; err != nil {
 			return err
 		}
 
-		// 3. Re-create rows and items
-		// We need to ensure the ID relationships are correct.
-		// We can assign the TierListID to all incoming rows.
+		// 3. Create new rows
 		for i := range input.Rows {
 			input.Rows[i].TierListID = existingTierList.ID
 			input.Rows[i].ID = uuid.Nil // Force new ID generation
+			fmt.Printf("DEBUG: Processing Row %s (Items: %d)\n", input.Rows[i].Label, len(input.Rows[i].Items))
 			for j := range input.Rows[i].Items {
-				input.Rows[i].Items[j].TierRowID = uuid.Nil // Will be set by GORM via association usually, but let's be safe
-				input.Rows[i].Items[j].ID = uuid.Nil        // Force new ID generation
+				input.Rows[i].Items[j].TierRowID = uuid.Nil // Set to nil, will be auto-filled
+				input.Rows[i].Items[j].ID = uuid.Nil
+				fmt.Printf("DEBUG:   - Item GameID: %s\n", input.Rows[i].Items[j].GameID)
 			}
 		}
 
-		// Use Association Replace or just Append since we deleted everything
 		if len(input.Rows) > 0 {
-			if err := tx.Model(&existingTierList).Association("Rows").Replace(input.Rows); err != nil {
+			if err := tx.Create(&input.Rows).Error; err != nil {
 				return err
 			}
 		}
