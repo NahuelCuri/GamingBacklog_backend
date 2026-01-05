@@ -55,4 +55,12 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/upload", middleware.Protected(), handlers.UploadImage)
 	// Delete /api/images/:filename
 	api.Delete("/images/:filename", middleware.Protected(), handlers.DeleteImage)
+	// Tier List Routes
+	tierLists := api.Group("/tier-lists")
+	tierLists.Use(middleware.Protected())
+	tierLists.Get("/", handlers.GetTierLists)
+	tierLists.Get("/:id", handlers.GetTierList)
+	tierLists.Post("/", handlers.CreateTierList)
+	tierLists.Put("/:id", handlers.UpdateTierList)
+	tierLists.Delete("/:id", handlers.DeleteTierList)
 }

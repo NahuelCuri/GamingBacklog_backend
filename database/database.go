@@ -35,7 +35,7 @@ func Connect() {
 	log.Println("Database connected successfully")
 
 	log.Println("Running migrations...")
-	if err := DB.AutoMigrate(&models.User{}, &models.Game{}, &models.GameTag{}); err != nil {
+	if err := DB.AutoMigrate(&models.User{}, &models.Game{}, &models.GameTag{}, &models.TierList{}, &models.TierRow{}, &models.TierItem{}); err != nil {
 		log.Printf("Failed to migrate database: %v", err)
 	} else {
 		log.Println("Database migrated successfully")
