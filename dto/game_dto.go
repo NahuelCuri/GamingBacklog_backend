@@ -13,6 +13,7 @@ type CreateGameRequest struct {
 	Genre        string      `json:"genre"`
 	Status       string      `json:"status"` // "backlog", "playing", etc.
 	Platform     string      `json:"platform"`
+	Platinum     bool        `json:"platinum"`
 	Score        *float64    `json:"score"`
 	HoursPlayed  int         `json:"hours_played"`
 	HLTBEstimate int         `json:"hltb_estimate"`
@@ -28,6 +29,7 @@ type UpdateGameRequest struct {
 	Genre        string      `json:"genre"`
 	Status       string      `json:"status"`
 	Platform     string      `json:"platform"`
+	Platinum     *bool       `json:"platinum"`
 	Score        *float64    `json:"score"`
 	HoursPlayed  int         `json:"hours_played"`
 	HLTBEstimate int         `json:"hltb_estimate"`
@@ -45,6 +47,7 @@ type GameResponse struct {
 	Genre        string        `json:"genre"`
 	Status       string        `json:"status"`
 	Platform     string        `json:"platform"`
+	Platinum     bool          `json:"platinum"`
 	Score        *float64      `json:"score"`
 	HoursPlayed  int           `json:"hours_played"`
 	HLTBEstimate int           `json:"hltb_estimate"`

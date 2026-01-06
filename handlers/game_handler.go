@@ -28,6 +28,7 @@ func mapGameToResponse(game models.Game) dto.GameResponse {
 		Genre:        game.Genre,
 		Status:       string(game.Status),
 		Platform:     game.Platform,
+		Platinum:     game.Platinum,
 		Score:        game.Score,
 		HoursPlayed:  game.HoursPlayed,
 		HLTBEstimate: game.HLTBEstimate,
@@ -88,6 +89,7 @@ func CreateGame(c *fiber.Ctx) error {
 		Genre:        req.Genre,
 		Status:       models.GameStatus(req.Status),
 		Platform:     req.Platform,
+		Platinum:     req.Platinum,
 		Score:        req.Score,
 		HoursPlayed:  req.HoursPlayed,
 		HLTBEstimate: req.HLTBEstimate,
@@ -145,6 +147,9 @@ func UpdateGame(c *fiber.Ctx) error {
 		game.Status = models.GameStatus(req.Status)
 	}
 	game.Platform = req.Platform
+	if req.Platinum != nil {
+		game.Platinum = *req.Platinum
+	}
 	game.Score = req.Score
 	game.HoursPlayed = req.HoursPlayed
 	game.HLTBEstimate = req.HLTBEstimate
